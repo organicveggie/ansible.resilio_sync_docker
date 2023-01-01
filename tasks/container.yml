@@ -17,7 +17,7 @@
 
 - name: "Define Docker mounts for extra folders"
   ansible.builtin.set_fact:
-    _resilio_docker_mount_list: "{{ _resilio_docker_mount_list | default([]) + 
+    _resilio_docker_mount_list: "{{ _resilio_docker_mount_list | default([]) +
       [{ 'source': item.key, 'target': '/mnt/mounted_folders/' + item.value, 'type': 'bind' }] }}"
   loop: "{{ resilio_docker_extra_dirs | dict2items }}"
 

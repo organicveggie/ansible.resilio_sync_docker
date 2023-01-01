@@ -41,15 +41,19 @@
           - "container_info.exists"
           - "container_info.container['State']['Running']"
 
+    - name: "Extract HostConfig"
+      ansible.builtin.set_fact:
+        _resilio_host_config: "{{ container_info.container['HostConfig'] }}"
+
     - name: "Verify container is configured correctly"
       ansible.builtin.assert:
         that:
-          - "container_info.container['HostConfig']['Mounts'][0]['Type'] == 'volume'"
-          - "container_info.container['HostConfig']['Mounts'][0]['Source'] == '{{ resilio_docker_volume_name }}'"
-          - "container_info.container['HostConfig']['Mounts'][0]['Target'] == '/mnt/sync'"
-          - "container_info.container['HostConfig']['Mounts'][1]['Type'] == 'bind'"
-          - "container_info.container['HostConfig']['Mounts'][1]['Source'] == '/var/log'"
-          - "container_info.container['HostConfig']['Mounts'][1]['Target'] == '/mnt/mounted_folders/logs'"
-          - "container_info.container['HostConfig']['Mounts'][2]['Type'] == 'bind'"
-          - "container_info.container['HostConfig']['Mounts'][2]['Source'] == '/etc'"
-          - "container_info.container['HostConfig']['Mounts'][2]['Target'] == '/mnt/mounted_folders/etc2'"
+          - "_resilio_host_config['Mounts'][0]['Type'] == 'volume'"
+          - "_resilio_host_config['Mounts'][0]['Source'] == '{{ resilio_docker_volume_name }}'"
+          - "_resilio_host_config['Mounts'][0]['Target'] == '/mnt/sync'"
+          - "_resilio_host_config['Mounts'][1]['Type'] == 'bind'"
+          - "_resilio_host_config['Mounts'][1]['Source'] == '/var/log'"
+          - "_resilio_host_config['Mounts'][1]['Target'] == '/mnt/mounted_folders/logs'"
+          - "_resilio_host_config['Mounts'][2]['Type'] == 'bind'"
+          - "_resilio_host_config['Mounts'][2]['Source'] == '/etc'"
+          - "_resilio_host_config['Mounts'][2]['Target'] == '/mnt/mounted_folders/etc2'"
