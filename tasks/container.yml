@@ -61,21 +61,21 @@
   with_items:
     - { key: "traefik.enable",  value: "{{ resilio_docker_available_externally }}" }
     # HTTP/HTTPS
-    - { key: "traefik.http.routers.resilio.rule", value: "Host(`{{ _resilio_docker_fqdn }}`)" }
-    - { key: "traefik.http.routers.resilio.entrypoints", value: "http,https" }
-    - { key: "traefik.http.routers.resilio.tls.certresolver", value: "letsencrypt" }
-    - { key: "traefik.http.routers.resilio.tls.domains[0].main", value: "*.{{ resilio_docker_host_domain }}" }
-    - { key: "traefik.http.services.resilio.loadbalancer.server.port", value: "{{ resilio_docker_web_port }}" }
+    - { key: "traefik.http.routers.resilio-web.rule", value: "Host(`{{ _resilio_docker_fqdn }}`)" }
+    - { key: "traefik.http.routers.resilio-web.entrypoints", value: "http,https" }
+    - { key: "traefik.http.routers.resilio-web.service", value: "resilio-web" }
+    - { key: "traefik.http.routers.resilio-web.tls.certresolver", value: "letsencrypt" }
+    - { key: "traefik.http.routers.resilio-web.tls.domains[0].main", value: "*.{{ resilio_docker_host_domain }}" }
+    - { key: "traefik.http.services.resilio-web.loadbalancer.server.port", value: "{{ resilio_docker_web_port }}" }
     # TCP
-    - { key: "traefik.tcp.routers.resilio.entrypoints", value: "resilio" }
-    - { key: "traefik.tcp.routers.resilio.rule", value: "HostSNI(`*`)" }
-    - { key: "traefik.tcp.routers.resilio.service", value: "resilio" }
-    - { key: "traefik.tcp.services.resilio.loadbalancer.server.port", value: "{{ resilio_docker_sync_port }}" }
+    - { key: "traefik.tcp.routers.resilio-tcp.entrypoints", value: "resilio_sync_tcp" }
+    - { key: "traefik.tcp.routers.resilio-tcp.rule", value: "HostSNI(`*`)" }
+    - { key: "traefik.tcp.routers.resilio-tcp.service", value: "resilio-tcp" }
+    - { key: "traefik.tcp.services.resilio-tcp.loadbalancer.server.port", value: "{{ resilio_docker_sync_port }}" }
     # UDP
-    - { key: "traefik.udp.routers.resilio.entrypoints", value: "resilio_udp" }
-    - { key: "traefik.udp.routers.resilio.rule", value: "HostSNI(`*`)" }
-    - { key: "traefik.udp.routers.resilio.service", value: "resilio" }
-    - { key: "traefik.udp.services.resilio.loadbalancer.server.port", value: "{{ resilio_docker_sync_port }}" }
+    - { key: "traefik.udp.routers.resilio-udp.entrypoints", value: "resilio_sync_udp" }
+    - { key: "traefik.udp.routers.resilio-udp", value: "resilio-udp" }
+    - { key: "traefik.udp.services.resilio-udp.loadbalancer.server.port", value: "{{ resilio_docker_sync_port }}" }
   when: "resilio_docker_available_externally"
 # yamllint enable rule:line-length
 
