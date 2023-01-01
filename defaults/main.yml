@@ -19,7 +19,7 @@ resilio_docker_image_version: "latest"
 # TCP port number to expose to handle HTTP traffic.
 resilio_docker_web_port: "8888"
 
-# TCP port number to expose to handle Sync traffic.
+# TCP/UDP port number to expose to handle Sync traffic.
 resilio_docker_sync_port: "55555"
 
 # Number of vCPUs to allocate to the container.
