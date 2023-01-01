@@ -1,0 +1,12 @@
+---
+- name: "Create Docker network"
+  community.docker.docker_network:
+    name: "{{ resilio_docker_network }}"
+    driver: "{{ resilio_docker_network_driver }}"
+    enable_ipv6: "{{ resilio_docker_network_enable_ipv6 }}"
+    internal: "{{ resilio_docker_network_internal }}"
+    scope: "{{ resilio_docker_network_scope }}"
+    ipam_config:
+      - subnet: "{{ resilio_docker_network_subnet }}"
+        gateway: "{{ resilio_docker_network_gateway }}"
+  when: "resilio_docker_network_create"

@@ -1,2 +1,136 @@
 ---
-# defaults file for resilio_sync_docker
+#####
+# Resilio Sync
+#####
+
+#####
+# Container settings
+#####
+
+# Name of the Docker container.
+resilio_docker_name: "resilio-sync"
+
+# Base name of the Docker image to use for the container.
+resilio_docker_image_name: "resilio/sync"
+
+# Specific Docker image version to use for the container.
+resilio_docker_image_version: "latest"
+
+# TCP port number to expose to handle HTTP traffic.
+resilio_docker_web_port: "8888"
+
+# TCP port number to expose to handle Sync traffic.
+resilio_docker_sync_port: "55555"
+
+# Number of vCPUs to allocate to the container.
+resilio_docker_cpus: "1"
+
+# Amount of memory to allocate to the container.
+resilio_docker_memory: "512M"
+
+# Override DNS servers.
+resilio_docker_dns_servers: null
+
+# Container restart policy.
+resilio_docker_restart_policy: "unless-stopped"
+
+# Run as a specific user id.
+resilio_docker_uid: null
+
+# Run as a specific group id.
+resilio_docker_gid: null
+
+#####
+# Docker networks
+#####
+
+# Name of the default Docker network for the container. The container will *always* attach to this
+# network. If [resilio_docker_network_create] is true, this is also the name of the network which
+# will be created.
+resilio_docker_network: "resilio-sync"
+
+# List of additional networks the container should attach to. Elements should be dictionaries like
+# https://docs.ansible.com/ansible/latest/collections/community/docker/docker_container_module.html#parameter-networks.
+resilio_docker_extra_networks: []
+
+# List of aliases for this container in the default network. These names can be used in the default
+# network to reach this container.
+resilio_docker_network_aliases: []
+
+# The container’s IPv4 address in the default network. Defaults to using DHCP.
+resilio_docker_network_ipv4: null
+
+# The container’s IPv6 address in the default network. Defaults to using DHCP. Only applies if
+# IPv6 is enabled in the default network.
+resilio_docker_network_ipv6: null
+
+# Create the default Docker network. True creates network and attaches the container to it. False
+# does not create the network.
+resilio_docker_network_create: false
+
+# Driver to use for the default Docker network for the container. Only used when
+# [resilio_docker_network_create] is enabled. See
+# https://docs.docker.com/network/#network-drivers for available options.
+resilio_docker_network_driver: "bridge"
+
+# Enable IPv6 in the default Docker network for the container. Only used when
+# [resilio_docker_network_create] is enabled.
+resilio_docker_network_enable_ipv6: "false"
+
+# Restrict external access to the default network. See
+# https://docs.docker.com/engine/reference/commandline/network_create/#network-internal-mode.
+# Only used when [resilio_docker_network_create] is enabled.
+resilio_docker_network_internal: "false"
+
+# Control the default network's scope. Only used when [resilio_docker_network_create] is enabled.
+resilio_docker_network_scope: "local"
+
+# IPv4 subnet for the default network. Only used when [resilio_docker_network_create] is enabled.
+resilio_docker_network_subnet: "172.1.1.0/24"
+
+# IPv4 gateway for the default network. Only used when [resilio_docker_network_create] is
+# enabled.
+resilio_docker_network_gateway: "172.1.1.1"
+
+#####
+# Docker volumes and folders
+#####
+
+# Create and use Docker volumes for storing data. True creates volumes and attaches them to the
+# container. False creates folders and bind mounts them to the container.
+resilio_docker_use_volumes: true
+
+# Name of the Docker volume to create to hold the storage folder, the configuration file, and the
+# default download folder. Only used when [resilio_docker_use_volumes] is true. Will be mounted
+# in the container at /mnt/sync.
+resilio_docker_volume_name: "resilio-sync"
+
+# Directory on filesystem to use o hold the storage folder, the configuration file, and the
+# default download folder. Only used when [resilio_docker_use_volumes] is false. Will be mounted
+# in the container at /mnt/sync.
+resilio_docker_data_dir: "/var/lib/resilio"
+
+# List of additional folders to mount in the container. Each folder will be mounted under
+# /mnt/mounted_folders. The list should be expressed as a dictionary with the host
+# directories as the keys and the name of the target folder as the values.
+#
+# Example:
+# resilio_docker_extra_dirs:
+#   "/opt/folder1": "folder1"
+#   "/opt/folder2": "folder2"
+resilio_docker_extra_dirs: {}
+
+#####
+# Traefik
+#####
+
+# Enable use of Traefik as a proxy.
+resilio_docker_available_externally: "true"
+
+# Host name to use for the Traefik endpoint. Combined with [resilio_docker_host_domain] to form
+# the FQDN for the endpoint.
+resilio_docker_hostname: "resilio"
+
+# Domain name to use for the Traefik endpoint. Combined with [resilio_docker_hostname] to form
+# the FQDN for the endpoint. Also used by Traefik to create the necessary Let's Encrypt certificate.
+resilio_docker_host_domain: "example.com"

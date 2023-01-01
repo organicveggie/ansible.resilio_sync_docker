@@ -1,0 +1,107 @@
+---
+- name: "Set fact describing data directory bind mount"
+  ansible.builtin.set_fact:
+    _resilio_docker_mount_list:
+      - source: "{{ resilio_docker_data_dir }}"
+        target: "/mnt/sync"
+        type: "bind"
+  when: "not resilio_docker_use_volumes"
+
+- name: "Set fact describing data directory Docker volume"
+  ansible.builtin.set_fact:
+    _resilio_docker_mount_list:
+      - source: "{{ resilio_docker_volume_name }}"
+        target: "/mnt/sync"
+        type: "volume"
+  when: "resilio_docker_use_volumes"
+
+- name: "Define Docker mounts for extra folders"
+  ansible.builtin.set_fact:
+    _resilio_docker_mount_list: "{{ _resilio_docker_mount_list | default([]) + 
+      [{ 'source': item.key, 'target': '/mnt/mounted_folders/' + item.value, 'type': 'bind' }] }}"
+  loop: "{{ resilio_docker_extra_dirs | dict2items }}"
+
+- name: "Convert created network into list with a dictionary"
+  ansible.builtin.set_fact:
+    _resilio_docker_created_networks:
+      - name: "{{ resilio_docker_network }}"
+        ipv4_address: "{{ _resilio_docker_network_ipv4 | default(omit) }}"
+        ipv6_address: "{{ _resilio_docker_network_ipv6 | default(omit) }}"
+        aliases: "{{ _resilio_docker_network_aliases | default(omit) }}"
+  when: "resilio_docker_network_create"
+
+- name: "Create placeholder list for created network"
+  ansible.builtin.set_fact:
+    _resilio_docker_created_networks: []
+  when: "not resilio_docker_network_create"
+
+- name: "Define all Docker networks for this container"
+  ansible.builtin.set_fact:
+    _resilio_docker_all_networks: >
+      {{ _resilio_docker_created_networks + resilio_docker_extra_networks }}
+
+- name: "Build container FQDN"
+  ansible.builtin.set_fact:
+    _resilio_docker_fqdn: "{{ resilio_docker_hostname }}.{{ resilio_docker_host_domain }}"
+
+- name: "Define Docker labels with Traefik disabled"
+  ansible.builtin.set_fact:
+    _resilio_docker_labels: "{{ _resilio_docker_labels | default({}) |
+      combine({item.key: item.value}) }}"
+  with_items:
+    - key: "traefik.enable"
+      value: "{{ resilio_docker_available_externally }}"
+  when: "not resilio_docker_available_externally"
+
+- name: "Define Docker labels with Traefik enabled"
+  ansible.builtin.set_fact:
+    _resilio_docker_labels: "{{ _resilio_docker_labels | default({}) |
+      combine({item.key: item.value}) }}"
+  with_items:
+    - key: "traefik.enable"
+      value: "{{ resilio_docker_available_externally }}"
+    - key: "traefik.http.routers.resilio.rule"
+      value: "Host(`{{ _resilio_docker_fqdn }}`)"
+    - key: "traefik.http.routers.resilio.entrypoints"
+      value: "http,https"
+    - key: "traefik.http.routers.resilio.tls.certresolver"
+      value: "letsencrypt"
+    - key: "traefik.http.routers.resilio.tls.domains[0].main"
+      value: "*.{{ resilio_docker_host_domain }}"
+    - key: "traefik.http.services.resilio.loadbalancer.server.port"
+      value: "{{ resilio_docker_web_port }}"
+    - key: "traefik.tcp.routers.resilio.entrypoints"
+      value: "resilio"
+    - key: "traefik.tcp.routers.resilio.rule"
+      value: "HostSNI(`*`)"
+    - key: "traefik.tcp.routers.resilio.service"
+      value: "resilio"
+    - key: "traefik.tcp.services.resilio.loadbalancer.server.port"
+      value: "{{ resilio_docker_sync_port }}"
+  when: "resilio_docker_available_externally"
+
+- name: "Create Resilio Sync Docker container"
+  community.docker.docker_container:
+    name: "{{ resilio_docker_name }}"
+    image: "{{ resilio_docker_image_name }}:{{ resilio_docker_image_version }}"
+    pull: true
+    mounts: "{{ _resilio_docker_mount_list }}"
+    dns_servers: "{{ resilio_docker_dns_servers | default(omit) }}"
+    env:
+      "PUID": "{{ resilio_docker_uid | default(omit) }}"
+      "PGID": "{{ resilio_docker_gid | default(omit) }}"
+    network_mode: "{{ resilio_docker_network }}"
+    networks: "{{ _resilio_docker_all_networks }}"
+    restart_policy: "{{ resilio_docker_restart_policy }}"
+    memory: "{{ resilio_docker_memory }}"
+    cpus: "{{ resilio_docker_cpus }}"
+    container_default_behavior: "no_defaults"
+    auto_remove: false
+    detach: true
+    init: true
+    interactive: true
+    paused: false
+    privileged: false
+    read_only: false
+    tty: true
+    labels: "{{ _resilio_docker_labels }}"

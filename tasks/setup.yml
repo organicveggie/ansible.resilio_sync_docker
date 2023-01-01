@@ -1,0 +1,29 @@
+---
+- name: "Create Resilio Sync data directory"
+  when: "not resilio_docker_use_volumes"
+  ansible.builtin.file:
+    name: "{{ resilio_docker_data_dir }}"
+    state: "directory"
+    mode: "0770"
+
+- name: "Create Resilio Sync Docker volume"
+  when: "resilio_docker_use_volumes"
+  community.docker.docker_volume:
+    name: "{{ resilio_docker_volume_name }}"
+
+- name: "Get info on Docker volume"
+  when: "resilio_docker_use_volumes"
+  community.docker.docker_volume_info:
+    name: "{{ resilio_docker_volume_name }}"
+  register: "_resilio_docker_volume_info"
+
+- name: "Build target path to Docker volume"
+  when: "resilio_docker_use_volumes"
+  ansible.builtin.set_fact:
+    fact_resilio_docker_data_folder:
+      "{{ _resilio_docker_volume_info['volume']['Mountpoint'] }}"
+
+- name: "Build target path to conf folder for bind mount"
+  when: "not resilio_docker_use_volumes"
+  ansible.builtin.set_fact:
+    fact_resilio_docker_data_folder: "{{ resilio_docker_data_dir }}"

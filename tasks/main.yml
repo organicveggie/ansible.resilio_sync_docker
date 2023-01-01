@@ -1,2 +1,19 @@
 ---
-# tasks file for resilio_sync_docker
+- name: "Run general setup"
+  ansible.builtin.import_tasks: "setup.yml"
+  tags:
+    - "resilio"
+    - "resilio:setup"
+
+- name: "Run network setup"
+  ansible.builtin.import_tasks: "network.yml"
+  tags:
+    - "resilio"
+    - "resilio:network"
+  when: "resilio_docker_network_create"
+
+- name: "Create container"
+  ansible.builtin.import_tasks: "container.yml"
+  tags:
+    - "resilio"
+    - "resilio:docker"

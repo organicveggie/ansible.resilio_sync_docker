@@ -1,8 +1,21 @@
 ---
-- name: Converge
-  hosts: all
-  gather_facts: false
-  tasks:
-    - name: "Include organicveggie.resilio_sync_docker"
-      ansible.builtin.include_role:
-        name: "organicveggie.resilio_sync_docker"
+- name: "Run common setup plays"
+  import_playbook: "../resources/playbooks/setup.yml"
+
+- name: "Converge execution"
+  hosts: "all"
+  become: true
+
+  vars:
+    resilio_docker_name: "resilio-test-container"
+    resilio_docker_volume_name: "resilio-test-volume"
+    resilio_docker_network_create: true
+    resilio_docker_network: "resilio-docker-test-network"
+    resilio_docker_extra_dirs:
+      "/var/log": "logs"
+      "/etc": "etc2"
+    resilio_docker_hostname: "resilio-test-host"
+    resilio_docker_host_domain: "test-example.com"
+
+  roles:
+    - "organicveggie.resilio_sync_docker"

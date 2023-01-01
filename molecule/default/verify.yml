@@ -1,10 +1,55 @@
 ---
-# This is an example playbook to execute Ansible tests.
-
-- name: Verify
-  hosts: all
+- name: "Verify"
+  hosts: "all"
   gather_facts: false
+  become: true
+
+  vars:
+    resilio_docker_name: "resilio-test-container"
+    resilio_docker_network: "resilio-docker-test-network"
+    resilio_docker_volume_name: "resilio-test-volume"
+
   tasks:
-  - name: Example assertion
-    ansible.builtin.assert:
-      that: true
+    - name: "Get info on data volume"
+      community.docker.docker_volume_info:
+        name: "{{ resilio_docker_volume_name }}"
+      register: "_volume_info_data"
+
+    - name: "Verify data volume"
+      ansible.builtin.assert:
+        that:
+          - "_volume_info_data.exists"
+
+    - name: "Get info on default network"
+      community.docker.docker_network_info:
+        name: "{{ resilio_docker_network }}"
+      register: "_network_info"
+
+    - name: "Verify default network"
+      ansible.builtin.assert:
+        that:
+          - "_network_info.exists"
+
+    - name: "Get info on container: {{ resilio_docker_name }}"
+      community.docker.docker_container_info:
+        name: "{{ resilio_docker_name }}"
+      register: "container_info"
+
+    - name: "Verify container exists and is running: {{ resilio_docker_name }}"
+      ansible.builtin.assert:
+        that:
+          - "container_info.exists"
+          - "container_info.container['State']['Running']"
+
+    - name: "Verify container is configured correctly"
+      ansible.builtin.assert:
+        that:
+          - "container_info.container['HostConfig']['Mounts'][0]['Type'] == 'volume'"
+          - "container_info.container['HostConfig']['Mounts'][0]['Source'] == '{{ resilio_docker_volume_name }}'"
+          - "container_info.container['HostConfig']['Mounts'][0]['Target'] == '/mnt/sync'"
+          - "container_info.container['HostConfig']['Mounts'][1]['Type'] == 'bind'"
+          - "container_info.container['HostConfig']['Mounts'][1]['Source'] == '/var/log'"
+          - "container_info.container['HostConfig']['Mounts'][1]['Target'] == '/mnt/mounted_folders/logs'"
+          - "container_info.container['HostConfig']['Mounts'][2]['Type'] == 'bind'"
+          - "container_info.container['HostConfig']['Mounts'][2]['Source'] == '/etc'"
+          - "container_info.container['HostConfig']['Mounts'][2]['Target'] == '/mnt/mounted_folders/etc2'"
